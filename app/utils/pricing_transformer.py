@@ -46,7 +46,8 @@ class PricingTransformer:
         def format_percentage(value: Any) -> float:
             try:
                 numeric_value = float(value)
-                return numeric_value * 100 if numeric_value < 1 else numeric_value
+                # Treat 1 (100%) as a decimal that needs conversion
+                return numeric_value * 100 if numeric_value <= 1 else numeric_value
             except (TypeError, ValueError):
                 return 0.0
 
