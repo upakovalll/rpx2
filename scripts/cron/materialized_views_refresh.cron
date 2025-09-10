@@ -1,0 +1,82 @@
+# Materialized Views Refresh Schedule for RPX Backend
+# 
+# This crontab file schedules automatic refresh of materialized views
+# to ensure data freshness while minimizing impact on system performance
+#
+# Installation:
+# 1. Copy this file to /etc/cron.d/rpx-materialized-views
+# 2. Ensure proper permissions: chmod 644 /etc/cron.d/rpx-materialized-views
+# 3. Restart cron service if needed: sudo service cron restart
+#
+# Format: minute hour day-of-month month day-of-week user command
+
+# Environment variables
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=devops@rpx.com
+
+# Python and script paths
+PYTHON=/usr/bin/python3
+SCRIPT_PATH=/opt/rpx-backend/scripts/refresh_materialized_views.py
+LOG_DIR=/var/log/rpx
+
+# Database connection (alternatively, use environment file)
+# These should be set in the system environment or loaded from .env
+
+# === REFRESH SCHEDULES ===
+
+# Production Schedule (Business Hours Optimization)
+# Refresh every 4 hours during business days, less frequently on weekends
+
+# Monday-Friday: Every 4 hours (6 times per day)
+# Times: 2 AM, 6 AM, 10 AM, 2 PM, 6 PM, 10 PM (EST)
+0 2,6,10,14,18,22 * * 1-5 rpx $PYTHON $SCRIPT_PATH --notify >> $LOG_DIR/refresh.log 2>&1
+
+# Saturday-Sunday: Every 8 hours (3 times per day)
+# Times: 6 AM, 2 PM, 10 PM (EST)
+0 6,14,22 * * 0,6 rpx $PYTHON $SCRIPT_PATH --notify >> $LOG_DIR/refresh.log 2>&1
+
+# === SPECIAL SCHEDULES ===
+
+# Market Open Refresh (weekdays only)
+# Ensure fresh data before market open at 9:30 AM EST
+25 9 * * 1-5 rpx $PYTHON $SCRIPT_PATH --notify --concurrent >> $LOG_DIR/refresh_market_open.log 2>&1
+
+# End of Day Refresh (weekdays only)
+# Capture final market data after close at 4:00 PM EST
+15 16 * * 1-5 rpx $PYTHON $SCRIPT_PATH --notify >> $LOG_DIR/refresh_eod.log 2>&1
+
+# === MAINTENANCE TASKS ===
+
+# Weekly full refresh (Sunday 3 AM)
+# Non-concurrent to rebuild indexes and optimize storage
+0 3 * * 0 rpx $PYTHON $SCRIPT_PATH --notify >> $LOG_DIR/refresh_weekly.log 2>&1
+
+# Daily status check (every day at 7 AM)
+# Just check view status without refreshing
+0 7 * * * rpx $PYTHON $SCRIPT_PATH --check-only >> $LOG_DIR/status_check.log 2>&1
+
+# === ALERTING ===
+
+# Failed refresh alerting (check every hour)
+# This job checks for recent failures and sends alerts
+0 * * * * rpx /opt/rpx-backend/scripts/check_refresh_failures.sh
+
+# === LOG ROTATION ===
+
+# Rotate logs weekly (Sunday 4 AM)
+0 4 * * 0 rpx /usr/sbin/logrotate -f /etc/logrotate.d/rpx-materialized-views
+
+# === NOTES ===
+#
+# 1. Adjust times based on your timezone and peak usage patterns
+# 2. The --concurrent flag requires unique indexes on materialized views
+# 3. Monitor /var/log/rpx/refresh.log for any issues
+# 4. Consider reducing frequency during maintenance windows
+# 5. Add webhook URL for Slack/Teams notifications: --webhook-url "https://..."
+#
+# Example manual run:
+# sudo -u rpx /usr/bin/python3 /opt/rpx-backend/scripts/refresh_materialized_views.py --notify
+#
+# To disable temporarily:
+# Comment out lines or rename file to .disabled

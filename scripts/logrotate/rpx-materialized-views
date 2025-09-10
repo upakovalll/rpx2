@@ -1,0 +1,74 @@
+# Logrotate configuration for RPX materialized view refresh logs
+# 
+# Install to: /etc/logrotate.d/rpx-materialized-views
+# Test with: logrotate -d /etc/logrotate.d/rpx-materialized-views
+
+/var/log/rpx/refresh*.log {
+    # Rotate daily
+    daily
+    
+    # Keep 30 days of logs
+    rotate 30
+    
+    # Compress old logs
+    compress
+    delaycompress
+    
+    # Don't rotate if empty
+    notifempty
+    
+    # Create new log files with specific permissions
+    create 0644 rpx rpx
+    
+    # Missing log files are ok
+    missingok
+    
+    # Include date in rotated filename
+    dateext
+    dateformat -%Y%m%d
+    
+    # Size threshold - rotate if larger than 100MB
+    size 100M
+    
+    # Copy then truncate to avoid disrupting running processes
+    copytruncate
+    
+    # Run post-rotation script
+    postrotate
+        # Optional: Send summary of the rotated log
+        if [ -f /opt/rpx-backend/scripts/summarize_refresh_log.py ]; then
+            /usr/bin/python3 /opt/rpx-backend/scripts/summarize_refresh_log.py $1
+        fi
+    endscript
+}
+
+/var/log/rpx/materialized_view_refresh.log {
+    # Main refresh log - keep longer
+    weekly
+    rotate 52
+    compress
+    delaycompress
+    notifempty
+    create 0644 rpx rpx
+    missingok
+    dateext
+    dateformat -%Y%W
+    size 500M
+    copytruncate
+}
+
+# Refresh results JSON files - clean up old ones
+/var/log/rpx/refresh_results_*.json {
+    # These are created for each refresh
+    daily
+    rotate 7
+    compress
+    missingok
+    notifempty
+    
+    # Remove rather than rotate old files
+    postrotate
+        # Remove JSON files older than 7 days
+        find /var/log/rpx -name "refresh_results_*.json" -mtime +7 -delete
+    endscript
+}
