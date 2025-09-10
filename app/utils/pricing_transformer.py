@@ -56,15 +56,15 @@ class PricingTransformer:
             "loan_id": get_value("loan_id", DEFAULT_NUMBER),
             "pricing_scenario": get_value("pricing_scenario", "RPX Pricing"),
             "maturity_assumption": get_value("maturity_assumption", "Maturity"),
-            "credit_spread": float(get_value("credit_spread", DEFAULT_NUMBER)),
-            "market_yield": float(get_value("market_yield", DEFAULT_NUMBER)),
+            "credit_spread": format_percentage(get_value("credit_spread", DEFAULT_NUMBER)),
+            "market_yield": format_percentage(get_value("market_yield", DEFAULT_NUMBER)),
             "loss_scenario": get_value("loss_scenario", "N"),
 
             # Risk metrics group
             "risk_metrics": {
-                "pd": float(get_value("risk_pd", get_value("pd", 0.0))),
-                "ead": float(get_value("risk_ead", get_value("ead", 100.0))),
-                "lgd": float(get_value("risk_lgd", get_value("lgd", 100.0))),
+                "pd": format_percentage(get_value("risk_pd", get_value("pd", 0.0))),
+                "ead": format_percentage(get_value("risk_ead", get_value("ead", 100.0))),
+                "lgd": format_percentage(get_value("risk_lgd", get_value("lgd", 100.0))),
                 "lag_to_recovery": get_value("lag_to_recovery", 0),
                 "default_date": format_date(get_value("default_date")) or DEFAULT_DATE,
                 "cdr": get_value("cdr", "0%")
@@ -93,7 +93,7 @@ class PricingTransformer:
                 "original_balance": float(get_value("original_balance", DEFAULT_NUMBER)),
                 "current_balance": float(get_value("current_balance", DEFAULT_NUMBER)),
                 "currency": get_value("currency", "USD"),
-                "client_percentage": float(get_value("client_percentage", 100.0)),
+                "client_percentage": format_percentage(get_value("client_percentage", 100.0)),
                 "pik_balance": get_value("pik_balance", " -   ")
             },
 
@@ -120,7 +120,7 @@ class PricingTransformer:
                     get_value("price_including_accrued", get_value("price", DEFAULT_NUMBER))
                 ),
                 "price": format_percentage(get_value("price", DEFAULT_NUMBER)),
-                "benchmark_yield": float(get_value("benchmark_yield", DEFAULT_NUMBER)),
+                "benchmark_yield": format_percentage(get_value("benchmark_yield", DEFAULT_NUMBER)),
                 "benchmark": get_value("benchmark_type", "US Treasury"),
                 "wal_years": float(get_value("wal_wal_years", get_value("wal_years", DEFAULT_NUMBER))),
                 "modified_duration_years": float(get_value("modified_duration_years", DEFAULT_NUMBER)),
@@ -135,8 +135,8 @@ class PricingTransformer:
                 "upper_price": format_percentage(get_value("upper_price", DEFAULT_NUMBER)),
                 "lower_fv": float(get_value("lower_fv", DEFAULT_NUMBER)),
                 "upper_fv": float(get_value("upper_fv", DEFAULT_NUMBER)),
-                "lower_mey": float(get_value("lower_mey", DEFAULT_NUMBER)),
-                "upper_mey": float(get_value("upper_mey", DEFAULT_NUMBER))
+                "lower_mey": format_percentage(get_value("lower_mey", DEFAULT_NUMBER)),
+                "upper_mey": format_percentage(get_value("upper_mey", DEFAULT_NUMBER))
             },
 
             # Dates group
@@ -155,7 +155,7 @@ class PricingTransformer:
 
             # Default scenario
             "default_scenario": get_value("default_scenario", "N"),
-            "component_yield": float(get_value("component_yield", DEFAULT_NUMBER)),
+            "component_yield": format_percentage(get_value("component_yield", DEFAULT_NUMBER)),
 
             # Price changes group
             "price_changes": {
@@ -170,18 +170,18 @@ class PricingTransformer:
 
             # Yield changes group
             "yield_changes": {
-                "delta_credit_spread": float(get_value("delta_credit_spread", 0.0)),
-                "delta_benchmark_yield": float(get_value("delta_benchmark_yield", 0.0)),
-                "delta_cbe_yield": float(get_value("delta_cbe_yield", 0.0)),
-                "yield_curve_shift": float(get_value("yield_curve_shift", 0.0)),
-                "yield_curve_roll": float(get_value("yield_curve_roll", 0.0))
+                "delta_credit_spread": format_percentage(get_value("delta_credit_spread", 0.0)),
+                "delta_benchmark_yield": format_percentage(get_value("delta_benchmark_yield", 0.0)),
+                "delta_cbe_yield": format_percentage(get_value("delta_cbe_yield", 0.0)),
+                "yield_curve_shift": format_percentage(get_value("yield_curve_shift", 0.0)),
+                "yield_curve_roll": format_percentage(get_value("yield_curve_roll", 0.0))
             },
 
             # Prior scenario group
             "prior_scenario": {
                 "scenario": get_value("prior_scenario", "Maturity"),
-                "credit_spread": float(get_value("credit_spread_prior", get_value("credit_spread", DEFAULT_NUMBER))),
-                "market_yield": float(get_value("market_yield_prior", get_value("market_yield", DEFAULT_NUMBER))),
+                "credit_spread": format_percentage(get_value("credit_spread_prior", get_value("credit_spread", DEFAULT_NUMBER))),
+                "market_yield": format_percentage(get_value("market_yield_prior", get_value("market_yield", DEFAULT_NUMBER))),
                 "maturity_scenario": get_value("maturity_scenario_prior", "Maturity"),
                 "amortization_type": get_value("amortization_type", "Amortizing"),
                 "property_location": get_value("property_location", "City, ST"),
@@ -190,10 +190,10 @@ class PricingTransformer:
                 "current_balance_prior": float(get_value("current_balance_prior",
                                                          get_value("current_balance", DEFAULT_NUMBER))),
                 "price_prior": format_percentage(get_value("price_prior", get_value("price", DEFAULT_NUMBER))),
-                "benchmark_yield_prior": float(get_value("benchmark_yield_prior", 0)),
-                "credit_spread_prior": float(get_value("credit_spread_prior",
+                "benchmark_yield_prior": format_percentage(get_value("benchmark_yield_prior", 0)),
+                "credit_spread_prior": format_percentage(get_value("credit_spread_prior",
                                                        get_value("credit_spread", DEFAULT_NUMBER))),
-                "market_yield_prior": float(get_value("market_yield_prior",
+                "market_yield_prior": format_percentage(get_value("market_yield_prior",
                                                       get_value("market_yield", DEFAULT_NUMBER))),
                 "dscr_prior": get_value("dscr_prior"),
                 "ltv_prior": get_value("ltv_prior"),
