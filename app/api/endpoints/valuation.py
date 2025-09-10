@@ -46,7 +46,26 @@ def get_pricing_output(
     query += f" ORDER BY current_balance DESC LIMIT {limit} OFFSET {skip}"
     
     rows = db.execute(text(query), params).mappings().all()
-    return JSONResponse(content=jsonable_encoder([dict(row) for row in rows]))
+
+    processed_rows = []
+    for row in rows:
+        row_dict = dict(row)
+        for field in ("market_yield", "credit_spread"):
+            value = row_dict.get(field)
+            if value is None and f"{field}_decimal" in row_dict:
+                value = row_dict.get(f"{field}_decimal")
+            if value is not None:
+                try:
+                    num_val = float(value)
+                    if num_val < 1:
+                        row_dict[field] = num_val * 100
+                    else:
+                        row_dict[field] = num_val
+                except (TypeError, ValueError):
+                    pass
+        processed_rows.append(row_dict)
+
+    return JSONResponse(content=jsonable_encoder(processed_rows))
 
 @router.get("/loan-rpx-adjustments", operation_id="loan_rpx_adjustments") 
 def get_loan_rpx_adjustments(
