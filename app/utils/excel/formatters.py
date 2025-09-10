@@ -84,10 +84,11 @@ class ExcelFormatter:
         
         try:
             numeric_value = float(value)
-            if as_decimal and numeric_value > 1:
-                # Assume it's a percentage and convert to decimal
-                return numeric_value / 100
-            return numeric_value
+            if as_decimal:
+                # When exporting as decimal, treat values >=1 as percentages
+                return numeric_value / 100 if numeric_value >= 1 else numeric_value
+            # Otherwise ensure decimal inputs (0-1) are converted to percentage scale
+            return numeric_value * 100 if numeric_value <= 1 else numeric_value
         except (TypeError, ValueError):
             return None
     
